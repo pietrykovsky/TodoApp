@@ -19,5 +19,9 @@ fun AppNavGraph(viewModel: TodoViewModel, startDestination: String = "taskList")
         composable("taskCreation") {
             TaskCreationPage(navController, viewModel)
         }
+        composable("taskEdit/{taskId}") { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId")?.toInt() ?: return@composable
+            EditTaskPage(navController, taskId, viewModel)
+        }
     }
 }

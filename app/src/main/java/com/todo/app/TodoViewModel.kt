@@ -24,6 +24,10 @@ class TodoViewModel(private val taskDao: TaskDao) : ViewModel() {
         }
     }
 
+    fun getTask(taskId: Int): LiveData<Task> {
+        return taskDao.getTask(taskId)
+    }
+
     fun addTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
             taskDao.add(task)
