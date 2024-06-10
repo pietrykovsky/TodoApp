@@ -58,6 +58,7 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                     onClick = {
                         // Reset filters
                         filteredTasks = taskList
+                        viewModel.resetFilters()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,

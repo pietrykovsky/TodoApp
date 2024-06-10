@@ -88,4 +88,10 @@ class TodoViewModel(private val taskDao: TaskDao) : ViewModel() {
 
         return filteredTasks
     }
+
+    fun resetFilters() {
+        _searchQuery.value = ""
+        _selectedPriority.value = null
+        _selectedSortOption.value = "Date Ascending"
+    }
 }
