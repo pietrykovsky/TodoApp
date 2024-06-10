@@ -37,7 +37,10 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
         filteredTasks = taskList
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -51,11 +54,17 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 FilterButton(onClick = { showFilterMenu = true })
-                Button(onClick = {
-                    // Reset filters
-                    filteredTasks = taskList
-                }) {
-                    Text("Reset Filters")
+                Button(
+                    onClick = {
+                        // Reset filters
+                        filteredTasks = taskList
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Reset Filters", color = MaterialTheme.colorScheme.inversePrimary)
                 }
             }
 
@@ -74,7 +83,8 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     text = "No items yet",
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.inversePrimary
                 )
             }
         }
@@ -83,8 +93,9 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
             FilterMenu(
                 onDismiss = { showFilterMenu = false },
                 onApplyFilters = { query, priority, sortOption ->
-                    filteredTasks = filterAndSortTasks(taskList, query, priority, sortOption)
-                }
+                    filteredTasks = viewModel.filterAndSortTasks(taskList, query, priority, sortOption)
+                },
+                viewModel = viewModel
             )
         }
 
@@ -94,39 +105,12 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
                 .clip(CircleShape),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.inversePrimary
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
         }
     }
-}
-
-fun filterAndSortTasks(
-    taskList: List<Task>,
-    query: String,
-    priority: Int?,
-    sortOption: String
-): List<Task> {
-    var filteredTasks = taskList.filter { task ->
-        task.name.contains(query, ignoreCase = true) || (task.description?.contains(query, ignoreCase = true) ?: false)
-    }
-
-    if (priority != null) {
-        filteredTasks = filteredTasks.filter { it.priority == priority }
-    }
-
-    filteredTasks = when (sortOption) {
-        "Date Ascending" -> filteredTasks.sortedBy { it.createdAt }
-        "Date Descending" -> filteredTasks.sortedByDescending { it.createdAt }
-        "Priority Ascending" -> filteredTasks.sortedBy { it.priority }
-        "Priority Descending" -> filteredTasks.sortedByDescending { it.priority }
-        "Alphabetically Ascending" -> filteredTasks.sortedBy { it.name }
-        "Alphabetically Descending" -> filteredTasks.sortedByDescending { it.name }
-        else -> filteredTasks
-    }
-
-    return filteredTasks
 }
 
 @Composable
@@ -144,48 +128,47 @@ fun TodoItem(item: Task, onDelete: () -> Unit, onEdit: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            val formattedDate = SimpleDateFormat("HH:mm aa, dd/MM/yyyy", Locale.ENGLISH).format(Date(item.createdAt))
             Text(
-                text = "Created at: $formattedDate",
+                text = SimpleDateFormat("HH:mm aa, dd/MM/yyyy", Locale.ENGLISH).format(Date(item.createdAt)),
                 fontSize = 12.sp,
-                color = Color.LightGray
+                color = MaterialTheme.colorScheme.inversePrimary
             )
             Text(
                 text = item.name,
                 fontSize = 20.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.inversePrimary
             )
             if (expanded) {
                 Text(
                     text = item.description ?: "",
                     fontSize = 16.sp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.inversePrimary
                 )
             } else {
                 Text(
                     text = item.description?.take(20)?.plus("...") ?: "",
                     fontSize = 16.sp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.inversePrimary
                 )
             }
             Text(
                 text = "Priority: ${item.priority}",
                 fontSize = 12.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.inversePrimary
             )
         }
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = Icons.Default.Edit,
                 contentDescription = "Edit",
-                tint = Color.White
+                tint = MaterialTheme.colorScheme.inversePrimary
             )
         }
         IconButton(onClick = onDelete) {
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Delete",
-                tint = Color.White
+                tint = MaterialTheme.colorScheme.inversePrimary
             )
         }
     }

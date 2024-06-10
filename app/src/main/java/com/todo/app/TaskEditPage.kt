@@ -53,7 +53,8 @@ fun EditTaskPage(navController: NavHostController, taskId: Int, viewModel: TodoV
             Text(
                 text = "Edit Task",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.dp),
+                color = MaterialTheme.colorScheme.inversePrimary
             )
         }
 
@@ -105,7 +106,7 @@ fun EditTaskPage(navController: NavHostController, taskId: Int, viewModel: TodoV
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Update Task")
+            Text("Update Task", color = MaterialTheme.colorScheme.inversePrimary)
         }
     }
 }

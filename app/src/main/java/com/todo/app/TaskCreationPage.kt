@@ -82,9 +82,9 @@ fun TaskCreationPage(navController: NavHostController, viewModel: TodoViewModel)
                     popUpTo("taskList") { inclusive = true }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Save Task")
+            Text("Save Task", color = MaterialTheme.colorScheme.inversePrimary)
         }
     }
 }

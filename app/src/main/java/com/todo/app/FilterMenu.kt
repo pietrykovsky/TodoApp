@@ -9,11 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun FilterButton(onClick: () -> Unit) {
@@ -25,59 +26,64 @@ fun FilterButton(onClick: () -> Unit) {
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary)
     ) {
-        Icon(imageVector = Icons.Default.Search, contentDescription = "Filters", tint = Color.White)
+        Icon(imageVector = Icons.Default.Search, contentDescription = "Filters", tint = MaterialTheme.colorScheme.inversePrimary)
     }
 }
 
 @Composable
 fun FilterMenu(
     onDismiss: () -> Unit,
-    onApplyFilters: (String, Int?, String) -> Unit
+    onApplyFilters: (String, Int?, String) -> Unit,
+    viewModel: TodoViewModel = viewModel()
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedPriority by remember { mutableStateOf<Int?>(null) }
-    var selectedSortOption by remember { mutableStateOf("Date Ascending") }
+    val searchQuery by viewModel.searchQuery.observeAsState("")
+    val selectedPriority by viewModel.selectedPriority.observeAsState(null)
+    val selectedSortOption by viewModel.selectedSortOption.observeAsState("Date Ascending")
+
+    var currentSearchQuery by remember { mutableStateOf(searchQuery) }
+    var currentSelectedPriority by remember { mutableStateOf(selectedPriority) }
+    var currentSelectedSortOption by remember { mutableStateOf(selectedSortOption) }
 
     val sortOptions = listOf("Date Ascending", "Date Descending", "Priority Ascending", "Priority Descending", "Alphabetically Ascending", "Alphabetically Descending")
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Filter Tasks") },
+        title = { Text("Filter Tasks", color = MaterialTheme.colorScheme.inversePrimary) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
                 OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    label = { Text("Search") },
+                    value = currentSearchQuery,
+                    onValueChange = { currentSearchQuery = it },
+                    label = { Text("Search", color = MaterialTheme.colorScheme.inversePrimary) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Priority", fontSize = 16.sp)
-                PriorityDropdown(selectedPriority) { priority -> selectedPriority = priority }
+                Text("Priority", fontSize = 16.sp, color = MaterialTheme.colorScheme.inversePrimary)
+                PriorityDropdown(currentSelectedPriority) { priority -> currentSelectedPriority = priority }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Sort By", fontSize = 16.sp)
-                SortDropdown(selectedSortOption, sortOptions) { option -> selectedSortOption = option }
+                Text("Sort By", fontSize = 16.sp, color = MaterialTheme.colorScheme.inversePrimary)
+                SortDropdown(currentSelectedSortOption, sortOptions) { option -> currentSelectedSortOption = option }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    onApplyFilters(searchQuery, selectedPriority, selectedSortOption)
+                    onApplyFilters(currentSearchQuery, currentSelectedPriority, currentSelectedSortOption)
                     onDismiss()
                 }
             ) {
-                Text("Apply Filters")
+                Text("Apply Filters", color = MaterialTheme.colorScheme.inversePrimary)
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = MaterialTheme.colorScheme.inversePrimary)
             }
         }
     )
@@ -90,7 +96,7 @@ fun PriorityDropdown(selectedPriority: Int?, onPrioritySelected: (Int?) -> Unit)
 
     Box {
         OutlinedButton(onClick = { expanded = true }) {
-            Text(text = selectedPriority?.toString() ?: "All")
+            Text(text = selectedPriority?.toString() ?: "All", color = MaterialTheme.colorScheme.inversePrimary)
         }
         DropdownMenu(
             expanded = expanded,
@@ -98,7 +104,7 @@ fun PriorityDropdown(selectedPriority: Int?, onPrioritySelected: (Int?) -> Unit)
         ) {
             priorities.forEach { priority ->
                 DropdownMenuItem(
-                    text = { Text(text = priority?.toString() ?: "All") },
+                    text = { Text(text = priority?.toString() ?: "All", color = MaterialTheme.colorScheme.inversePrimary) },
                     onClick = {
                         onPrioritySelected(priority)
                         expanded = false
@@ -115,7 +121,7 @@ fun SortDropdown(selectedSortOption: String, sortOptions: List<String>, onSortOp
 
     Box {
         OutlinedButton(onClick = { expanded = true }) {
-            Text(text = selectedSortOption)
+            Text(text = selectedSortOption, color = MaterialTheme.colorScheme.inversePrimary)
         }
         DropdownMenu(
             expanded = expanded,
@@ -123,7 +129,7 @@ fun SortDropdown(selectedSortOption: String, sortOptions: List<String>, onSortOp
         ) {
             sortOptions.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(text = option) },
+                    text = { Text(text = option, color = MaterialTheme.colorScheme.inversePrimary) },
                     onClick = {
                         onSortOptionSelected(option)
                         expanded = false
