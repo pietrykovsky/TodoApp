@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -29,15 +30,38 @@ import java.util.*
 fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
     val taskList by viewModel.tasks.observeAsState(initial = emptyList())
 
+    var showFilterMenu by remember { mutableStateOf(false) }
+    var filteredTasks by remember { mutableStateOf(taskList) }
+
+    LaunchedEffect(taskList) {
+        filteredTasks = taskList
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(8.dp)
         ) {
-            if (taskList.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilterButton(onClick = { showFilterMenu = true })
+                Button(onClick = {
+                    // Reset filters
+                    filteredTasks = taskList
+                }) {
+                    Text("Reset Filters")
+                }
+            }
+
+            if (filteredTasks.isNotEmpty()) {
                 LazyColumn {
-                    itemsIndexed(taskList) { _, item ->
+                    itemsIndexed(filteredTasks) { _, item ->
                         TodoItem(item = item, onDelete = {
                             viewModel.deleteTask(item)
                         }, onEdit = {
@@ -54,17 +78,55 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 )
             }
         }
+
+        if (showFilterMenu) {
+            FilterMenu(
+                onDismiss = { showFilterMenu = false },
+                onApplyFilters = { query, priority, sortOption ->
+                    filteredTasks = filterAndSortTasks(taskList, query, priority, sortOption)
+                }
+            )
+        }
+
         FloatingActionButton(
             onClick = { navController.navigate("taskCreation") },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp),
+                .padding(16.dp)
+                .clip(CircleShape),
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = Color.White
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
         }
     }
+}
+
+fun filterAndSortTasks(
+    taskList: List<Task>,
+    query: String,
+    priority: Int?,
+    sortOption: String
+): List<Task> {
+    var filteredTasks = taskList.filter { task ->
+        task.name.contains(query, ignoreCase = true) || (task.description?.contains(query, ignoreCase = true) ?: false)
+    }
+
+    if (priority != null) {
+        filteredTasks = filteredTasks.filter { it.priority == priority }
+    }
+
+    filteredTasks = when (sortOption) {
+        "Date Ascending" -> filteredTasks.sortedBy { it.createdAt }
+        "Date Descending" -> filteredTasks.sortedByDescending { it.createdAt }
+        "Priority Ascending" -> filteredTasks.sortedBy { it.priority }
+        "Priority Descending" -> filteredTasks.sortedByDescending { it.priority }
+        "Alphabetically Ascending" -> filteredTasks.sortedBy { it.name }
+        "Alphabetically Descending" -> filteredTasks.sortedByDescending { it.name }
+        else -> filteredTasks
+    }
+
+    return filteredTasks
 }
 
 @Composable
