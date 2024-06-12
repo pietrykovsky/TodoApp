@@ -12,8 +12,11 @@ import com.todo.app.db.AppDatabase
 import com.todo.app.ui.theme.TodoAppTheme
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: TodoViewModel by viewModels {
+    private val todoViewModel: TodoViewModel by viewModels {
         TodoViewModelFactory(AppDatabase.getDatabase(this).taskDao())
+    }
+    private val notificationViewModel: NotificationViewModel by viewModels {
+        NotificationViewModelFactory(AppDatabase.getDatabase(this).notificationDao())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +27,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavGraph(viewModel)
+                    AppNavGraph(todoViewModel, notificationViewModel)
                 }
             }
         }
