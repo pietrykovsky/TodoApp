@@ -9,15 +9,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,19 +54,34 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FilterButton(onClick = { showFilterMenu = true })
-                Button(
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FilterButton(onClick = { showFilterMenu = true })
+                    IconButton(
+                        onClick = {
+                            // Reset filters
+                            filteredTasks = taskList
+                            viewModel.resetFilters()
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear filters", tint = MaterialTheme.colorScheme.inversePrimary)
+                    }
+                }
+                IconButton(
                     onClick = {
-                        // Reset filters
-                        filteredTasks = taskList
-                        viewModel.resetFilters()
+                        navController.navigate("notifications")
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
-                    )
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Reset Filters", color = MaterialTheme.colorScheme.inversePrimary)
+                    Icon(imageVector = Icons.Default.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.inversePrimary)
                 }
             }
 
