@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.todo.app"
-        minSdk = 24
+        minSdk = 31
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.appcompat)
     val room_version = "2.6.1"
 
     implementation("androidx.room:room-runtime:$room_version")

@@ -1,5 +1,6 @@
 package com.todo.app.pages
 
+import android.app.AlarmManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -121,6 +122,15 @@ fun NotificationManagementPage(navController: NavHostController, todoViewModel: 
 @Composable
 fun NotificationItem(notification: Notification, task: Task, onDelete: () -> Unit) {
     val formattedDate = SimpleDateFormat("HH:mm aa, dd/MM/yyyy", Locale.ENGLISH).format(Date(notification.reminderTime))
+
+    val repeatIntervalText = when (notification.repeatInterval) {
+        null -> "None"
+        AlarmManager.INTERVAL_DAY -> "Daily"
+        AlarmManager.INTERVAL_DAY * 7 -> "Weekly"
+        AlarmManager.INTERVAL_DAY * 30 -> "Monthly"
+        else -> "Custom"
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,6 +151,11 @@ fun NotificationItem(notification: Notification, task: Task, onDelete: () -> Uni
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.inversePrimary
             )
+            Text(
+                text = "Repeat: $repeatIntervalText",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.inversePrimary
+            )
         }
         IconButton(onClick = onDelete) {
             Icon(
@@ -151,3 +166,4 @@ fun NotificationItem(notification: Notification, task: Task, onDelete: () -> Uni
         }
     }
 }
+

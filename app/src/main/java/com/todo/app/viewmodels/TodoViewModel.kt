@@ -1,17 +1,30 @@
 package com.todo.app.viewmodels
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.todo.app.AlarmReceiver
 import com.todo.app.db.Notification
 import com.todo.app.db.NotificationDao
 import com.todo.app.db.Task
 import com.todo.app.db.TaskDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
-class TodoViewModel(private val taskDao: TaskDao, private val notificationDao: NotificationDao) : ViewModel() {
+class TodoViewModel(
+    private val taskDao: TaskDao,
+    private val notificationDao: NotificationDao,
+    private val context: Context
+) : ViewModel() {
+    private val _showExactAlarmPermissionDialog = MutableLiveData<Boolean>()
+    val showExactAlarmPermissionDialog: LiveData<Boolean> get() = _showExactAlarmPermissionDialog
 
     private val _tasks = MutableLiveData<List<Task>>()
     val tasks: LiveData<List<Task>> get() = _tasks
@@ -41,7 +54,20 @@ class TodoViewModel(private val taskDao: TaskDao, private val notificationDao: N
 
     private fun fetchNotifications() {
         viewModelScope.launch(Dispatchers.IO) {
+            removeStaleNotifications()
             _notifications.postValue(notificationDao.getAll())
+        }
+    }
+
+    private fun removeStaleNotifications() {
+        val currentTime = System.currentTimeMillis()
+        val staleNotifications = notificationDao.getAll().filter {
+            it.reminderTime < currentTime && it.repeatInterval == null
+        }
+
+        staleNotifications.forEach { notification ->
+            notificationDao.delete(notification)
+            cancelAlarm(notification)
         }
     }
 
@@ -59,6 +85,7 @@ class TodoViewModel(private val taskDao: TaskDao, private val notificationDao: N
     fun addNotification(notification: Notification) {
         viewModelScope.launch(Dispatchers.IO) {
             notificationDao.add(notification)
+            scheduleAlarm(notification)
             fetchNotifications()
         }
     }
@@ -82,6 +109,7 @@ class TodoViewModel(private val taskDao: TaskDao, private val notificationDao: N
     fun deleteNotification(notification: Notification) {
         viewModelScope.launch(Dispatchers.IO) {
             notificationDao.delete(notification)
+            cancelAlarm(notification)
             fetchNotifications()
         }
     }
@@ -89,6 +117,7 @@ class TodoViewModel(private val taskDao: TaskDao, private val notificationDao: N
     fun deleteAllNotifications() {
         viewModelScope.launch(Dispatchers.IO) {
             notificationDao.deleteAll()
+            cancelAllAlarms()
             fetchNotifications()
         }
     }
@@ -128,5 +157,68 @@ class TodoViewModel(private val taskDao: TaskDao, private val notificationDao: N
         _searchQuery.value = ""
         _selectedPriority.value = null
         _selectedSortOption.value = "Date Ascending"
+    }
+
+    private fun scheduleAlarm(notification: Notification) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val taskName = runBlocking(Dispatchers.IO) {
+            taskDao.getTaskSync(notification.taskId)?.name ?: return@runBlocking null
+        } ?: return
+
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("TASK_NAME", taskName)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            notification.id,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        try {
+            if (notification.repeatInterval != null) {
+                alarmManager.setRepeating(
+                    AlarmManager.RTC_WAKEUP,
+                    notification.reminderTime,
+                    notification.repeatInterval,
+                    pendingIntent
+                )
+            } else {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExact(
+                        AlarmManager.RTC_WAKEUP,
+                        notification.reminderTime,
+                        pendingIntent
+                    )
+                } else {
+                    showExactAlarmPermissionDialog()
+                }
+            }
+        } catch (e: SecurityException) {
+            showExactAlarmPermissionDialog()
+        }
+    }
+
+    private fun showExactAlarmPermissionDialog() {
+        _showExactAlarmPermissionDialog.postValue(true)
+    }
+
+    private fun cancelAlarm(notification: Notification) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            notification.id,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
+    }
+
+    private fun cancelAllAlarms() {
+        notifications.value?.forEach { notification ->
+            cancelAlarm(notification)
+        }
     }
 }

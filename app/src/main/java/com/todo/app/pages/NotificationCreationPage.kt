@@ -1,5 +1,6 @@
 package com.todo.app.pages
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
@@ -31,6 +32,7 @@ fun NotificationCreationPage(
     val taskList by todoViewModel.tasks.observeAsState(initial = emptyList())
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var reminderTime by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
+    var repeatInterval by remember { mutableStateOf<Long?>(null) }
     var showTaskDropdown by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -102,6 +104,14 @@ fun NotificationCreationPage(
                 TimePicker(context = context, timeMillis = reminderTime) { time ->
                     reminderTime = time.timeInMillis
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(text = "Repeat Interval", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                RepeatIntervalPicker(repeatInterval) { interval ->
+                    repeatInterval = interval
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -111,7 +121,8 @@ fun NotificationCreationPage(
                     selectedTask?.let {
                         val notification = Notification(
                             taskId = it.id,
-                            reminderTime = reminderTime
+                            reminderTime = reminderTime,
+                            repeatInterval = repeatInterval
                         )
                         todoViewModel.addNotification(notification)
                         navController.popBackStack()
@@ -133,7 +144,7 @@ fun NotificationCreationPage(
 
 @Composable
 fun DatePicker(context: Context, dateMillis: Long, onDateSelected: (Calendar) -> Unit) {
-    val selectedDate by remember { mutableStateOf(Calendar.getInstance().apply { timeInMillis = dateMillis }) }
+    val selectedDate = remember { Calendar.getInstance().apply { timeInMillis = dateMillis } }
 
     val datePickerDialog = DatePickerDialog(
         context,
@@ -156,7 +167,7 @@ fun DatePicker(context: Context, dateMillis: Long, onDateSelected: (Calendar) ->
 
 @Composable
 fun TimePicker(context: Context, timeMillis: Long, onTimeSelected: (Calendar) -> Unit) {
-    val selectedTime by remember { mutableStateOf(Calendar.getInstance().apply { timeInMillis = timeMillis }) }
+    val selectedTime = remember { Calendar.getInstance().apply { timeInMillis = timeMillis } }
 
     val timePickerDialog = TimePickerDialog(
         context,
@@ -178,3 +189,35 @@ fun TimePicker(context: Context, timeMillis: Long, onTimeSelected: (Calendar) ->
     }
 }
 
+@Composable
+fun RepeatIntervalPicker(currentInterval: Long?, onIntervalSelected: (Long?) -> Unit) {
+    val intervals = listOf(
+        "None" to null,
+        "Daily" to AlarmManager.INTERVAL_DAY,
+        "Weekly" to AlarmManager.INTERVAL_DAY * 7,
+        "Monthly" to AlarmManager.INTERVAL_DAY * 30
+    )
+    var selectedInterval by remember { mutableStateOf(currentInterval) }
+    var showDropdown by remember { mutableStateOf(false) }
+
+    Box {
+        OutlinedButton(onClick = { showDropdown = !showDropdown }) {
+            Text(
+                text = intervals.find { it.second == selectedInterval }?.first ?: "None",
+                color = MaterialTheme.colorScheme.inversePrimary
+            )
+        }
+        DropdownMenu(expanded = showDropdown, onDismissRequest = { showDropdown = false }) {
+            intervals.forEach { (label, interval) ->
+                DropdownMenuItem(
+                    text = { Text(text = label) },
+                    onClick = {
+                        selectedInterval = interval
+                        onIntervalSelected(interval)
+                        showDropdown = false
+                    }
+                )
+            }
+        }
+    }
+}

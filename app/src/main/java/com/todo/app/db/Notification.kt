@@ -9,5 +9,5 @@ data class Notification(
     val id: Int = 0,
     val taskId: Int,
     val reminderTime: Long,
-    val isActive: Boolean = true
+    val repeatInterval: Long? = null
 )
