@@ -17,6 +17,9 @@ interface NotificationDao {
     @Delete
     fun delete(notification: Notification)
 
+    @Query("DELETE FROM notifications WHERE taskId = :taskId")
+    fun deleteAllWhere(taskId: Int)
+
     @Query("DELETE FROM notifications")
     fun deleteAll()
 

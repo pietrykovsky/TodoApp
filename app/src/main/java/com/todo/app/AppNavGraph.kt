@@ -4,13 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.todo.app.pages.EditTaskPage
 import com.todo.app.pages.NotificationCreationPage
 import com.todo.app.pages.NotificationManagementPage
+import com.todo.app.pages.TaskCreationPage
+import com.todo.app.pages.TodoListPage
+import com.todo.app.viewmodels.TodoViewModel
 
 @Composable
 fun AppNavGraph(
     todoViewModel: TodoViewModel,
-    notificationViewModel: NotificationViewModel,
     startDestination: String = "taskList"
 ) {
     val navController = rememberNavController()
@@ -29,10 +32,10 @@ fun AppNavGraph(
             EditTaskPage(navController, taskId, todoViewModel)
         }
         composable("notifications") {
-            NotificationManagementPage(navController, notificationViewModel)
+            NotificationManagementPage(navController, todoViewModel)
         }
         composable("notificationCreation") {
-            NotificationCreationPage(navController, todoViewModel, notificationViewModel)
+            NotificationCreationPage(navController, todoViewModel)
         }
     }
 }

@@ -21,14 +21,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.todo.app.viewmodels.TodoViewModel
 import com.todo.app.db.Notification
-import com.todo.app.NotificationViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun NotificationManagementPage(navController: NavHostController, viewModel: NotificationViewModel) {
-    val notificationList by viewModel.notifications.observeAsState(initial = emptyList())
+fun NotificationManagementPage(navController: NavHostController, todoViewModel: TodoViewModel) {
+    val notificationList by todoViewModel.notifications.observeAsState(initial = emptyList())
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -49,7 +49,7 @@ fun NotificationManagementPage(navController: NavHostController, viewModel: Noti
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                 }
-                IconButton(onClick = { viewModel.deleteAllNotifications() }) {
+                IconButton(onClick = { todoViewModel.deleteAllNotifications() }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete All")
                 }
             }
@@ -57,7 +57,7 @@ fun NotificationManagementPage(navController: NavHostController, viewModel: Noti
                 LazyColumn {
                     itemsIndexed(notificationList) { _, item ->
                         NotificationItem(notification = item, onDelete = {
-                            viewModel.deleteNotification(item)
+                            todoViewModel.deleteNotification(item)
                         })
                     }
                 }

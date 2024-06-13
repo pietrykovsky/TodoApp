@@ -1,4 +1,4 @@
-package com.todo.app
+package com.todo.app.pages
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,11 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.todo.app.viewmodels.TodoViewModel
 import com.todo.app.db.Task
 
 @Composable
-fun EditTaskPage(navController: NavHostController, taskId: Int, viewModel: TodoViewModel) {
-    val task by viewModel.getTask(taskId).observeAsState()
+fun EditTaskPage(navController: NavHostController, taskId: Int, todoViewModel: TodoViewModel) {
+    val task by todoViewModel.getTask(taskId).observeAsState()
 
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -99,7 +100,7 @@ fun EditTaskPage(navController: NavHostController, taskId: Int, viewModel: TodoV
         Button(
             onClick = {
                 val priorityValue = priority.toInt()
-                viewModel.editTask(Task(taskId, name, description, priorityValue, task!!.createdAt))
+                todoViewModel.editTask(Task(taskId, name, description, priorityValue, task!!.createdAt))
                 navController.navigate("taskList") {
                     popUpTo("taskList") { inclusive = true }
                 }

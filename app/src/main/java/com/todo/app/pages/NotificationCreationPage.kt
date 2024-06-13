@@ -19,17 +19,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.todo.app.db.Notification
 import com.todo.app.db.Task
-import com.todo.app.NotificationViewModel
-import com.todo.app.TodoViewModel
+import com.todo.app.viewmodels.TodoViewModel
 import java.util.*
 
 @Composable
 fun NotificationCreationPage(
     navController: NavHostController,
-    taskViewModel: TodoViewModel,
-    notificationViewModel: NotificationViewModel
+    todoViewModel: TodoViewModel
 ) {
-    val taskList by taskViewModel.tasks.observeAsState(initial = emptyList())
+    val taskList by todoViewModel.tasks.observeAsState(initial = emptyList())
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var reminderTime by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
     var showTaskDropdown by remember { mutableStateOf(false) }
@@ -97,7 +95,7 @@ fun NotificationCreationPage(
                         taskId = it.id,
                         reminderTime = reminderTime
                     )
-                    notificationViewModel.addNotification(notification)
+                    todoViewModel.addNotification(notification)
                     navController.popBackStack()
                 }
             },

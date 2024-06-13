@@ -1,4 +1,4 @@
-package com.todo.app
+package com.todo.app.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,13 +23,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.todo.app.viewmodels.TodoViewModel
 import com.todo.app.db.Task
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
-    val taskList by viewModel.tasks.observeAsState(initial = emptyList())
+fun TodoListPage(navController: NavHostController, todoViewModel: TodoViewModel) {
+    val taskList by todoViewModel.tasks.observeAsState(initial = emptyList())
 
     var showFilterMenu by remember { mutableStateOf(false) }
     var filteredTasks by remember { mutableStateOf(taskList) }
@@ -60,7 +61,7 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                         onClick = {
                             // Reset filters
                             filteredTasks = taskList
-                            viewModel.resetFilters()
+                            todoViewModel.resetFilters()
                         },
                         modifier = Modifier
                             .padding(8.dp)
@@ -89,7 +90,7 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 LazyColumn {
                     itemsIndexed(filteredTasks) { _, item ->
                         TodoItem(item = item, onDelete = {
-                            viewModel.deleteTask(item)
+                            todoViewModel.deleteTask(item)
                         }, onEdit = {
                             navController.navigate("taskEdit/${item.id}")
                         })
@@ -110,9 +111,9 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
             FilterMenu(
                 onDismiss = { showFilterMenu = false },
                 onApplyFilters = { query, priority, sortOption ->
-                    filteredTasks = viewModel.filterAndSortTasks(taskList, query, priority, sortOption)
+                    filteredTasks = todoViewModel.filterAndSortTasks(taskList, query, priority, sortOption)
                 },
-                viewModel = viewModel
+                viewModel = todoViewModel
             )
         }
 

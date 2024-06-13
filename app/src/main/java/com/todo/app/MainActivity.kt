@@ -10,13 +10,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.todo.app.db.AppDatabase
 import com.todo.app.ui.theme.TodoAppTheme
+import com.todo.app.viewmodels.TodoViewModel
+import com.todo.app.viewmodels.TodoViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private val todoViewModel: TodoViewModel by viewModels {
-        TodoViewModelFactory(AppDatabase.getDatabase(this).taskDao())
-    }
-    private val notificationViewModel: NotificationViewModel by viewModels {
-        NotificationViewModelFactory(AppDatabase.getDatabase(this).notificationDao())
+        TodoViewModelFactory(
+            AppDatabase.getDatabase(this).taskDao(),
+            AppDatabase.getDatabase(this).notificationDao()
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavGraph(todoViewModel, notificationViewModel)
+                    AppNavGraph(todoViewModel)
                 }
             }
         }

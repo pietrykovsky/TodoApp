@@ -1,4 +1,4 @@
-package com.todo.app
+package com.todo.app.pages
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,10 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.todo.app.viewmodels.TodoViewModel
 import com.todo.app.db.Task
 
 @Composable
-fun TaskCreationPage(navController: NavHostController, viewModel: TodoViewModel) {
+fun TaskCreationPage(navController: NavHostController, todoViewModel: TodoViewModel) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(1f) }
@@ -77,7 +78,7 @@ fun TaskCreationPage(navController: NavHostController, viewModel: TodoViewModel)
         Button(
             onClick = {
                 val priorityValue = priority.toInt()
-                viewModel.addTask(Task(name = name, description = description, priority = priorityValue))
+                todoViewModel.addTask(Task(name = name, description = description, priority = priorityValue))
                 navController.navigate("taskList") {
                     popUpTo("taskList") { inclusive = true }
                 }
