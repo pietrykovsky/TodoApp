@@ -23,12 +23,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.todo.app.viewmodels.TodoViewModel
 import com.todo.app.db.Notification
+import com.todo.app.db.Task
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun NotificationManagementPage(navController: NavHostController, todoViewModel: TodoViewModel) {
     val notificationList by todoViewModel.notifications.observeAsState(initial = emptyList())
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -46,19 +48,40 @@ fun NotificationManagementPage(navController: NavHostController, todoViewModel: 
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                    Text(
+                        text = "Notifications",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
                 }
-                IconButton(onClick = { todoViewModel.deleteAllNotifications() }) {
+                IconButton(
+                    onClick = { showDialog = true },
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                ) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete All")
                 }
             }
             if (notificationList.isNotEmpty()) {
                 LazyColumn {
                     itemsIndexed(notificationList) { _, item ->
-                        NotificationItem(notification = item, onDelete = {
-                            todoViewModel.deleteNotification(item)
-                        })
+                        val task by todoViewModel.getTask(item.taskId).observeAsState()
+                        task?.let {
+                            NotificationItem(
+                                notification = item,
+                                task = it,
+                                onDelete = {
+                                    todoViewModel.deleteNotification(item)
+                                }
+                            )
+                        }
                     }
                 }
             } else {
@@ -84,10 +107,19 @@ fun NotificationManagementPage(navController: NavHostController, todoViewModel: 
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Notification")
         }
     }
+
+    if (showDialog) {
+        ConfirmDialog(
+            title = "Delete Notifications",
+            text = "Are you sure you want to delete all notifications?",
+            onConfirm = { todoViewModel.deleteAllNotifications() },
+            onDismiss = { showDialog = false }
+        )
+    }
 }
 
 @Composable
-fun NotificationItem(notification: Notification, onDelete: () -> Unit) {
+fun NotificationItem(notification: Notification, task: Task, onDelete: () -> Unit) {
     val formattedDate = SimpleDateFormat("HH:mm aa, dd/MM/yyyy", Locale.ENGLISH).format(Date(notification.reminderTime))
     Row(
         modifier = Modifier
@@ -95,8 +127,7 @@ fun NotificationItem(notification: Notification, onDelete: () -> Unit) {
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.primary)
-            .padding(16.dp)
-            .clickable { /* Handle click if needed */ },
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -106,7 +137,7 @@ fun NotificationItem(notification: Notification, onDelete: () -> Unit) {
                 color = MaterialTheme.colorScheme.inversePrimary
             )
             Text(
-                text = "Task ID: ${notification.taskId}",
+                text = "Notification for: \"${task.name}\"",
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.inversePrimary
             )

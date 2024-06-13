@@ -37,7 +37,8 @@ fun TaskCreationPage(navController: NavHostController, todoViewModel: TodoViewMo
             Text(
                 text = "Create Task",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.dp),
+                color = MaterialTheme.colorScheme.inversePrimary
             )
         }
 
