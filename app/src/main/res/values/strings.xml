@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TodoApp</string>
+    <string name="notification_channel_name">Task Reminder</string>
+    <string name="notification_channel_description">Notifications for task reminders</string>
 </resources>

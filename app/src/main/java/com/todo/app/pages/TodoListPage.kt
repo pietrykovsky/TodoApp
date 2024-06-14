@@ -1,4 +1,4 @@
-package com.todo.app
+package com.todo.app.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,26 +9,28 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.todo.app.viewmodels.TodoViewModel
 import com.todo.app.db.Task
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
-    val taskList by viewModel.tasks.observeAsState(initial = emptyList())
+fun TodoListPage(navController: NavHostController, todoViewModel: TodoViewModel) {
+    val taskList by todoViewModel.tasks.observeAsState(initial = emptyList())
 
     var showFilterMenu by remember { mutableStateOf(false) }
     var filteredTasks by remember { mutableStateOf(taskList) }
@@ -53,19 +55,34 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FilterButton(onClick = { showFilterMenu = true })
-                Button(
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FilterButton(onClick = { showFilterMenu = true })
+                    IconButton(
+                        onClick = {
+                            // Reset filters
+                            filteredTasks = taskList
+                            todoViewModel.resetFilters()
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear filters", tint = MaterialTheme.colorScheme.inversePrimary)
+                    }
+                }
+                IconButton(
                     onClick = {
-                        // Reset filters
-                        filteredTasks = taskList
-                        viewModel.resetFilters()
+                        navController.navigate("notifications")
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
-                    )
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Reset Filters", color = MaterialTheme.colorScheme.inversePrimary)
+                    Icon(imageVector = Icons.Default.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.inversePrimary)
                 }
             }
 
@@ -73,7 +90,7 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
                 LazyColumn {
                     itemsIndexed(filteredTasks) { _, item ->
                         TodoItem(item = item, onDelete = {
-                            viewModel.deleteTask(item)
+                            todoViewModel.deleteTask(item)
                         }, onEdit = {
                             navController.navigate("taskEdit/${item.id}")
                         })
@@ -94,9 +111,9 @@ fun TodoListPage(navController: NavHostController, viewModel: TodoViewModel) {
             FilterMenu(
                 onDismiss = { showFilterMenu = false },
                 onApplyFilters = { query, priority, sortOption ->
-                    filteredTasks = viewModel.filterAndSortTasks(taskList, query, priority, sortOption)
+                    filteredTasks = todoViewModel.filterAndSortTasks(taskList, query, priority, sortOption)
                 },
-                viewModel = viewModel
+                viewModel = todoViewModel
             )
         }
 

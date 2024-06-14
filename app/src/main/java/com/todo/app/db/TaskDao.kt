@@ -23,4 +23,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTask(taskId: Int): LiveData<Task>
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    fun getTaskSync(taskId: Int): Task?
 }

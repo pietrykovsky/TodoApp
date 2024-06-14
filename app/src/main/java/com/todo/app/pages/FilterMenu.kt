@@ -1,4 +1,4 @@
-package com.todo.app
+package com.todo.app.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.todo.app.viewmodels.TodoViewModel
 
 @Composable
 fun FilterButton(onClick: () -> Unit) {
